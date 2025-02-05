@@ -1,0 +1,6 @@
+ollama
+langchain
+langchain_community
+sentence_transformers
+pdfplumber
+faiss-cpu
