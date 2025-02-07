@@ -1,0 +1,9 @@
+Generate C unit tests for {question}:
+
+Context:
+{context}
+
+Include tests for:
+1. Normal expected inputs
+2. Edge cases
+3. Invalid inputs

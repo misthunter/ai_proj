@@ -15,7 +15,6 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_text_splitters import Language
 from langchain_core.runnables import RunnablePassthrough
 
-
 def parse_pdf(file_path):
     loader = PDFPlumberLoader(file_path)  
     docs = loader.load()
@@ -36,7 +35,7 @@ def parse_code(file_path):
 
     return (texts)
 
-def setup_ai_model(model_name, pdf_file_path=None, code_file_path=None):
+def setup_ai_model(model_name, prompt_file_path, pdf_file_path=None, code_file_path=None, question=None):
    
     if pdf_file_path is not None:
         documents = parse_pdf(pdf_file_path)
@@ -55,56 +54,25 @@ def setup_ai_model(model_name, pdf_file_path=None, code_file_path=None):
     llm = Ollama(model=model_name)
     
     # Craft the prompt template  
-    prompt = """  
-    Generate C unit tests for the {question}:
-    
-    Context:
-    {context}
-    
-    Include tests for:
-    1. Normal expected inputs
-    2. Edge cases
-    3. Invalid inputs
-    Use cunit syntax.
-    """  
-    #QA_CHAIN_PROMPT = PromptTemplate.from_template(prompt)
-    
-    # Chain 1: Generate answers  
-    #llm_chain = LLMChain(llm=llm, prompt=QA_CHAIN_PROMPT)  
-    
-    # Chain 2: Combine document chunks  
+    prompt = open(prompt_file_path, 'r').read()
+       
     document_prompt = PromptTemplate(  
         template=prompt,  
         input_variables=["context", "question"]  
-        #template=prompt_RAG, input_variables=["context", "question"]
     )  
 
-    #qa = RetrievalQA(  
-    #    combine_documents_chain=StuffDocumentsChain(  
-    #        llm_chain=llm_chain,  
-    #        document_prompt=document_prompt,
-    #        document_variable_name=document_variable_name
-    #    ),  
-    #    retriever=retriever  
-    #)
-    #qa = RetrievalQA.from_llm(
-    #    llm=llm, prompt=prompt, retriever=retriever
-    #)
     qa_chain = (
         {"context": retriever, "question": RunnablePassthrough()}
         | document_prompt
         | llm
         | StrOutputParser()
     )
-    
-    #response = qa({"query": "the function rsu_client_copy_status_log"})
-    #rag_chain = {"document_variable_name": document_variable_name} | document_prompt | llm | StrOutputParser()
-    question = "the function rsu_client_copy_status_log"
+
     response = qa_chain.invoke(question)
     print(response)
     
-#test_generator()
-#parse_pdf()    
-#setup_ai_model('deepseek-coder:6.7b', 'sample_pdf\\rsu.pdf')
+# generate unit tests in C
+#setup_ai_model('deepseek-coder:6.7b', code_file_path='sample_code\\rsu_client.c', prompt_file_path='prompts\\unit_test_c_prompt.txt', question='the function rsu_client_list_slot_attribute')
 
-setup_ai_model('deepseek-coder:6.7b', code_file_path='sample_code\\rsu_client.c')
+# generate test plan from PDF
+setup_ai_model('deepseek-r1:latest', pdf_file_path='sample_pdf\\rsu.pdf', prompt_file_path='prompts\\test_plan_generation_prompt.txt', question='Programming Flash Memory with the Initial Remote System Update Image')
