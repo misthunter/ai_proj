@@ -4,3 +4,5 @@ langchain_community
 sentence_transformers
 pdfplumber
 faiss-cpu
+llama-index-embeddings-huggingface
+llama-index-embeddings-instructor
