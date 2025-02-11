@@ -5,6 +5,9 @@ from langchain_community.vectorstores import DocArrayInMemorySearch
 from langchain_community.vectorstores import FAISS  
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.embeddings import OllamaEmbeddings
+from langchain_community.document_loaders import AsyncHtmlLoader
+from langchain_community.document_transformers import Html2TextTransformer
+
 from langchain_community.llms import Ollama
 from langchain.prompts import PromptTemplate
 from langchain.chains.llm import LLMChain
@@ -14,6 +17,13 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_text_splitters import Language
 from langchain_core.runnables import RunnablePassthrough
+
+def scrape_website(urls):
+    loader = AsyncHtmlLoader(urls)
+    docs = loader.load()
+    html2text = Html2TextTransformer()
+    docs_transformed = html2text.transform_documents(docs)
+    return (docs_transformed)
 
 def parse_pdf(file_path):
     loader = PDFPlumberLoader(file_path)  
@@ -35,7 +45,7 @@ def parse_code(file_path):
 
     return (texts)
 
-def setup_ai_model(model_name, prompt_file_path, pdf_file_path=None, code_file_path=None, question=None):
+def setup_ai_model(model_name, prompt_file_path, pdf_file_path=None, code_file_path=None, urls=None, question=None):
    
     if pdf_file_path is not None:
         documents = parse_pdf(pdf_file_path)
@@ -44,7 +54,12 @@ def setup_ai_model(model_name, prompt_file_path, pdf_file_path=None, code_file_p
 
     elif code_file_path is not None:
         texts = parse_code(code_file_path)
-        embeddings = OllamaEmbeddings(model="llama2:7b")
+        embeddings = OllamaEmbeddings(model="nomic-embed-text")
+        vector_store = FAISS.from_documents(texts, embeddings) 
+        
+    elif urls is not None:
+        texts = scrape_website(urls)
+        embeddings = OllamaEmbeddings(model="nomic-embed-text")
         vector_store = FAISS.from_documents(texts, embeddings) 
 
     # Connect retriever  
@@ -75,4 +90,9 @@ def setup_ai_model(model_name, prompt_file_path, pdf_file_path=None, code_file_p
 #setup_ai_model('deepseek-coder:6.7b', code_file_path='sample_code\\rsu_client.c', prompt_file_path='prompts\\unit_test_c_prompt.txt', question='the function rsu_client_list_slot_attribute')
 
 # generate test plan from PDF
-setup_ai_model('deepseek-r1:latest', pdf_file_path='sample_pdf\\rsu.pdf', prompt_file_path='prompts\\test_plan_generation_prompt.txt', question='Programming Flash Memory with the Initial Remote System Update Image')
+#setup_ai_model('deepseek-r1:latest', pdf_file_path='sample_pdf\\rsu.pdf', prompt_file_path='prompts\\test_plan_generation_prompt.txt', question='Programming Flash Memory with the Initial Remote System Update Image')
+
+setup_ai_model('wizardlm2:7b', urls='https://altera-fpga.github.io/rel-24.2/embedded-designs/agilex-7/f-series/soc/rsu/ug-rsu-agx7f-soc/', prompt_file_path='prompts\\rsu_test_prompt.txt', question='perform slot_erase on slot 2')
+
+#docs = scrape_website("")
+#print(docs)

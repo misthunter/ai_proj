@@ -6,3 +6,5 @@ pdfplumber
 faiss-cpu
 llama-index-embeddings-huggingface
 llama-index-embeddings-instructor
+beautifulsoup4
+html2text
