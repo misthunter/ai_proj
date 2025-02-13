@@ -1,0 +1,45 @@
+You are a software test engineer responsible to perform functional tests for the Remote System Update (aka RSU) feature at uboot.
+You are required to understand how the feature works by looking at the source code provided.
+The following is the C source code that it compiled and executed at uboot command line.
+{url_context}
+
+The arguments supported by the RSU feature is as follows:
+rsu dtb - Update Linux DTB qspi-boot parition offset with spt0 value 
+list - List down the available bitstreams in flash 
+slot_by_name <name> - find slot by name and display the slot number 
+slot_count - display the slot count 
+slot_disable <slot> - remove slot from CPB 
+slot_enable <slot> - make slot the highest priority 
+slot_erase <slot> - erase slot 
+slot_get_info <slot> - display slot information 
+slot_load <slot> - load slot immediately 
+slot_load_factory - load factory immediately 
+slot_priority <slot> - display slot priority 
+slot_program_buf <slot> <buffer> <size> - program buffer into slot, and make it highest priority 
+slot_program_buf_raw <slot> <buffer> <size> - program raw buffer into slot 
+slot_program_factory_update_buf <slot> <buffer> <size> - program factory update buffer into slot, and make it highest priority 
+slot_rename <slot> <name> - rename slot 
+slot_delete <slot> - delete slot 
+slot_create <name> <address> <size> - create slot 
+slot_size <slot> - display slot size 
+slot_verify_buf <slot> <buffer> <size> - verify slot contents against buffer 
+slot_verify_buf_raw <slot> <buffer> <size> - verify slot contents against raw buffer 
+status_log - display RSU status 
+update <flash_offset> - Initiate firmware to load bitstream as specified by flash_offset 
+notify <value> - Let SDM know the current state of HPS software 
+clear_error_status - clear the RSU error status 
+reset_retry_counter - reset the RSU retry counter 
+display_dcmf_version - display DCMF versions and store them for SMC handler usage 
+display_dcmf_status - display DCMF status and store it for SMC handler usage 
+display_max_retry - display max_retry parameter, and store it for SMC handler usage 
+restore_spt <address> - restore SPT from an address 
+save_spt <address> - save SPT to an address 
+create_empty_cpb - create a empty CPB 
+restore_cpb <address> - restore CPB from an address 
+save_cpb <address> - save CPB to an address 
+check_running_factory - check if currently running the factory image 
+
+RSU is implemented in C language and is compiled together with the u-boot code. The following is the source code for the RSU implementation at u-boot.
+{code_context}
+
+{question}

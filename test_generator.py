@@ -3,6 +3,8 @@
 from langchain_community.document_loaders import PDFPlumberLoader
 from langchain_community.vectorstores import DocArrayInMemorySearch
 from langchain_community.vectorstores import FAISS  
+from langchain_community.vectorstores import Chroma
+
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.embeddings import OllamaEmbeddings
 from langchain_community.document_loaders import AsyncHtmlLoader
@@ -12,11 +14,14 @@ from langchain_community.llms import Ollama
 from langchain.prompts import PromptTemplate
 from langchain.chains.llm import LLMChain
 from langchain.chains import RetrievalQA, StuffDocumentsChain
+from langchain.retrievers.multi_vector import MultiVectorRetriever
+
 from langchain_core.documents import Document
 from langchain_core.output_parsers import StrOutputParser
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_text_splitters import Language
 from langchain_core.runnables import RunnablePassthrough
+
 
 def scrape_website(urls):
     loader = AsyncHtmlLoader(urls)
@@ -51,20 +56,23 @@ def setup_ai_model(model_name, prompt_file_path, pdf_file_path=None, code_file_p
         documents = parse_pdf(pdf_file_path)
         embeddings = HuggingFaceEmbeddings() 
         vector_store = FAISS.from_documents(documents, embeddings)  
+        pdf_retriever = vector_store.as_retriever(search_kwargs={"k": 3}) 
 
-    elif code_file_path is not None:
+    if code_file_path is not None:
         texts = parse_code(code_file_path)
         embeddings = OllamaEmbeddings(model="nomic-embed-text")
         vector_store = FAISS.from_documents(texts, embeddings) 
+        code_retriever = vector_store.as_retriever(search_kwargs={"k": 3}) 
         
-    elif urls is not None:
+    if urls is not None:
         texts = scrape_website(urls)
         embeddings = OllamaEmbeddings(model="nomic-embed-text")
         vector_store = FAISS.from_documents(texts, embeddings) 
+        url_retriever = vector_store.as_retriever(search_kwargs={"k": 3}) 
 
     # Connect retriever  
-    retriever = vector_store.as_retriever(search_kwargs={"k": 3}) 
-    document_variable_name = "context"
+    
+    #document_variable_name = "context"
     
     llm = Ollama(model=model_name)
     
@@ -73,11 +81,11 @@ def setup_ai_model(model_name, prompt_file_path, pdf_file_path=None, code_file_p
        
     document_prompt = PromptTemplate(  
         template=prompt,  
-        input_variables=["context", "question"]  
+        input_variables=["code_context", "url_context", "question"]  
     )  
 
     qa_chain = (
-        {"context": retriever, "question": RunnablePassthrough()}
+        {"code_context": code_retriever, "url_context": url_retriever, "question": RunnablePassthrough()}
         | document_prompt
         | llm
         | StrOutputParser()
@@ -92,7 +100,7 @@ def setup_ai_model(model_name, prompt_file_path, pdf_file_path=None, code_file_p
 # generate test plan from PDF
 #setup_ai_model('deepseek-r1:latest', pdf_file_path='sample_pdf\\rsu.pdf', prompt_file_path='prompts\\test_plan_generation_prompt.txt', question='Programming Flash Memory with the Initial Remote System Update Image')
 
-setup_ai_model('wizardlm2:7b', urls='https://altera-fpga.github.io/rel-24.2/embedded-designs/agilex-7/f-series/soc/rsu/ug-rsu-agx7f-soc/', prompt_file_path='prompts\\rsu_test_prompt.txt', question='perform slot_erase on slot 2')
+setup_ai_model('wizardlm2:7b', code_file_path='sample_code\\rsu_client.c', urls='https://altera-fpga.github.io/rel-24.2/embedded-designs/agilex-7/f-series/soc/rsu/ug-rsu-agx7f-soc/', prompt_file_path='prompts\\rsu_study_code.txt', question='Write a comprehensive functional black box test plan with the detailed test steps to test out all the supported parameters.')
 
 #docs = scrape_website("")
 #print(docs)
