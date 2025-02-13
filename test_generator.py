@@ -94,13 +94,18 @@ def setup_ai_model(model_name, prompt_file_path, pdf_file_path=None, code_file_p
     response = qa_chain.invoke(question)
     print(response)
     
-# generate unit tests in C
+## generate unit tests in C
 #setup_ai_model('deepseek-coder:6.7b', code_file_path='sample_code\\rsu_client.c', prompt_file_path='prompts\\unit_test_c_prompt.txt', question='the function rsu_client_list_slot_attribute')
 
-# generate test plan from PDF
+## generate test plan from PDF
 #setup_ai_model('deepseek-r1:latest', pdf_file_path='sample_pdf\\rsu.pdf', prompt_file_path='prompts\\test_plan_generation_prompt.txt', question='Programming Flash Memory with the Initial Remote System Update Image')
 
-setup_ai_model('wizardlm2:7b', code_file_path='sample_code\\rsu_client.c', urls='https://altera-fpga.github.io/rel-24.2/embedded-designs/agilex-7/f-series/soc/rsu/ug-rsu-agx7f-soc/', prompt_file_path='prompts\\rsu_study_code.txt', question='Write a comprehensive functional black box test plan with the detailed test steps to test out all the supported parameters.')
+## write a test case base on a description
+#setup_ai_model('qwen2.5-coder', code_file_path='sample_code\\rsu_client.c', urls='https://altera-fpga.github.io/rel-24.2/embedded-designs/agilex-7/f-series/soc/rsu/ug-rsu-agx7f-soc/', prompt_file_path='prompts\\rsu_study_code.txt', question='Write a test case to display the max retry status')
+#setup_ai_model('qwen2.5-coder', code_file_path='sample_code\\rsu_client.c', urls='https://altera-fpga.github.io/rel-24.2/embedded-designs/agilex-7/f-series/soc/rsu/ug-rsu-agx7f-soc/', prompt_file_path='prompts\\rsu_study_code.txt', question='Write a test case to erase slot 2 and add application2.rpd to slot 2')
+
+##  writing tests step by step
+#setup_ai_model('qwen2.5-coder', code_file_path='sample_code\\rsu.c', urls='https://altera-fpga.github.io/rel-24.2/embedded-designs/agilex-7/f-series/soc/rsu/ug-rsu-agx7f-soc/', prompt_file_path='prompts\\rsu_study_code.txt', question='Write a test case based on these steps: \n1) check dcmf version \n2) check the slot count \n3) get the slot info for slot 0 \n4) erase slot 1 \n5) load application2.rpd from mmc to ram \n6) program slot 1 with content of application2.rpd in ram buffer')
 
 #docs = scrape_website("")
 #print(docs)

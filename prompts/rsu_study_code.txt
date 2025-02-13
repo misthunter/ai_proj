@@ -3,7 +3,7 @@ You are required to understand how the feature works by looking at the source co
 The following is the C source code that it compiled and executed at uboot command line.
 {url_context}
 
-The arguments supported by the RSU feature is as follows:
+RSU uboot commands:
 rsu dtb - Update Linux DTB qspi-boot parition offset with spt0 value 
 list - List down the available bitstreams in flash 
 slot_by_name <name> - find slot by name and display the slot number 
@@ -42,4 +42,8 @@ check_running_factory - check if currently running the factory image
 RSU is implemented in C language and is compiled together with the u-boot code. The following is the source code for the RSU implementation at u-boot.
 {code_context}
 
+As a test engineer, your job is to write black box test cases as if you are interacting with the u-boot prompt. 
+Make sure to only use arguments listed 'RSU uboot commands'. 
+Commands should always start with 'rsu' followed by a space and followed by the listed argument.
+The test case should consist of only the u-boot commands without the description.
 {question}
